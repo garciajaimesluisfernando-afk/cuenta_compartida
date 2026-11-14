@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ account.name }} · Cuenta compartida{% endblock %}
+{% block content %}
+<section class="scoreboard">
+  <p class="eyebrow">{{ account.name }}</p>
+  <p class="score-label">Falta por cobrar</p>
+  <p class="big-amount">{{ due_total|money }}</p>
+  <p class="score-meta">
+    {{ pending_people|length }} sin pagar
+    · {{ paid_people|length }} ya pagaron
+    · productos {{ products_total|money }}
+    · cobrado {{ paid_total|money }}
+  </p>
+  {% if unassigned %}
+    <p class="note">Hay {{ unassigned|money }} en productos que nadie marcó. No entran a “falta por cobrar” hasta que alguien los elija.</p>
+  {% endif %}
+</section>
+
+<div class="layout">
+  <section class="card">
+    <h2>Productos</h2>
+    <form action="{{ url_for('agregar_producto', account_id=account.id) }}" method="post" class="product-form">
+      <label>
+        Nombre
+        <input name="name" maxlength="80" required placeholder="Pizza">
+      </label>
+      <label>
+        Precio
+        <input name="price" inputmode="decimal" required placeholder="85.50">
+      </label>
+      <button type="submit">Agregar</button>
+    </form>
+
+    {% if products %}
+      <ul class="product-list">
+        {% for product in products %}
+          <li>
+            <div>
+              <strong>{{ product.name }}</strong>
+              <span>{{ product.price_cents|money }}</span>
+            </div>
+            <div class="row-actions">
+              <span class="muted">
+                {% if product.consumer_count == 0 %}
+                  Nadie
+                {% elif product.consumer_count == 1 %}
+                  1 persona
+                {% else %}
+                  {{ product.consumer_count }} personas
+                {% endif %}
+              </span>
+              <form action="{{ url_for('quitar_producto', account_id=account.id, product_id=product.id) }}" method="post">
+                <button class="ghost" type="submit">Quitar</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Agrega el primer producto para empezar.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Entrar</h2>
+    <p class="muted">Cada persona escribe su nombre en esta misma página. Si el nombre ya existe, vuelve a su lugar.</p>
+    <form action="{{ url_for('entrar', account_id=account.id) }}" method="post" class="stack">
+      <label for="person-name">Tu nombre</label>
+      <input id="person-name" name="name" maxlength="80" required placeholder="Ana" autocomplete="off">
+      <button type="submit">Entrar y marcar lo mío</button>
+    </form>
+  </section>
+</div>
+
+<section class="card board">
+  <h2>Tablero</h2>
+
+  <h3>Falta por pagar</h3>
+  {% if pending_people %}
+    <ul class="people">
+      {% for person in pending_people %}
+        {% include "_persona.html" %}
+      {% endfor %}
+    </ul>
+  {% elif people %}
+    <p class="ok-text">Todos pagaron.</p>
+  {% else %}
+    <p class="muted">Nadie ha entrado todavía.</p>
+  {% endif %}
+
+  <h3>Ya pagaron</h3>
+  {% if paid_people %}
+    <ul class="people">
+      {% for person in paid_people %}
+        {% include "_persona.html" %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Todavía no hay pagos marcados.</p>
+  {% endif %}
+</section>
+{% endblock %}

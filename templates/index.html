@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Cuenta compartida{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Hackatón de pagos</p>
+  <h1>Una cuenta, varias personas.</h1>
+  <p class="lead">Crea la cuenta de un evento, agrega lo que se pidió y deja que cada quien marque lo que consumió. El tablero dice quién ya pagó y cuánto falta.</p>
+</section>
+
+<section class="card">
+  <h2>Nueva cuenta</h2>
+  <form action="{{ url_for('crear_cuenta') }}" method="post" class="stack">
+    <label for="name">Nombre del evento</label>
+    <input id="name" name="name" maxlength="80" required placeholder="Cena de amigos" autofocus>
+    <button type="submit">Crear cuenta</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Cuentas abiertas</h2>
+  {% if accounts %}
+    <ul class="account-list">
+      {% for account in accounts %}
+        <li>
+          <a href="{{ url_for('ver_cuenta', account_id=account['id']) }}">
+            <strong>{{ account["name"] }}</strong>
+            <span>{{ account["product_count"] }} productos · {{ account["participant_count"] }} personas</span>
+          </a>
+          <time>{{ account["created_at"] }}</time>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Todavía no hay cuentas. Crea la primera arriba.</p>
+  {% endif %}
+</section>
+{% endblock %}

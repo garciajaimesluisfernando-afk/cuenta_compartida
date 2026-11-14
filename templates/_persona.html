@@ -1,0 +1,21 @@
+<li class="person {% if person.paid %}is-paid{% else %}is-pending{% endif %}">
+  <div>
+    <strong>{{ person.name }}</strong>
+    <p>{{ person.product_names|join(", ") or "Sin productos" }}</p>
+    {% if person.tip_percent %}
+      <p class="muted">Incluye propina del {{ person.tip_percent }}%.</p>
+    {% endif %}
+  </div>
+  <div class="person-side">
+    <span class="amount">{{ person.display_cents|money }}</span>
+    {% if person.paid %}
+      <span class="badge badge-paid">Pagado</span>
+      <form action="{{ url_for('deshacer_pago', account_id=account.id, participant_id=person.id) }}" method="post">
+        <button class="ghost" type="submit">Deshacer</button>
+      </form>
+    {% else %}
+      <span class="badge badge-pending">Pendiente</span>
+      <a href="{{ url_for('ver_participante', account_id=account.id, participant_id=person.id) }}">Abrir</a>
+    {% endif %}
+  </div>
+</li>

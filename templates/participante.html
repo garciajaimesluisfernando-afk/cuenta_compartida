@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ person.name }} · {{ account.name }}{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('ver_cuenta', account_id=account.id) }}">← Volver al tablero</a></p>
+
+<section class="hero tight">
+  <p class="eyebrow">{{ account.name }}</p>
+  <h1>{{ person.name }}</h1>
+</section>
+
+{% if person.paid %}
+  <section class="card paid-card">
+    <p class="stamp">Pagado</p>
+    <p class="score-label">Quedó guardado</p>
+    <p class="big-amount">{{ person.display_cents|money }}</p>
+    <p>Este botón no cobró dinero. Solo marcó el pago en el tablero.</p>
+    <p class="muted">{{ person.product_names|join(", ") or "Sin productos" }}</p>
+    <form action="{{ url_for('deshacer_pago', account_id=account.id, participant_id=person.id) }}" method="post">
+      <button class="ghost" type="submit">Deshacer pago</button>
+    </form>
+  </section>
+{% else %}
+  <section class="card total-card">
+    <p class="score-label">Te toca</p>
+    <p class="big-amount">{{ person.live_cents|money }}</p>
+    <p class="score-meta">
+      Productos {{ person.subtotal_cents|money }}
+      {% if person.tip_percent %}
+        · propina {{ person.tip_percent }}% ({{ person.tip_cents|money }})
+      {% else %}
+        · sin propina
+      {% endif %}
+    </p>
+    <p class="muted">Este número usa lo último que guardaste. Si cambias las casillas, pulsa “Guardar y ver mi parte”.</p>
+  </section>
+
+  <section class="card">
+    <h2>¿Qué consumiste?</h2>
+    {% if choices %}
+      <form action="{{ url_for('guardar_consumo', account_id=account.id, participant_id=person.id) }}" method="post" class="stack">
+        <ul class="choices">
+          {% for choice in choices %}
+            <li>
+              <label class="choice">
+                <input type="checkbox" name="product_id" value="{{ choice.id }}" {% if choice.checked %}checked{% endif %}>
+                <span>
+                  <strong>{{ choice.name }}</strong>
+                  <span class="muted">{{ choice.price_cents|money }}</span>
+                  <small>
+                    {% if choice.checked %}
+                      {% if choice.others == 0 %}
+                        Solo tú lo marcaste. Te toca {{ choice.share_cents|money }}.
+                      {% elif choice.others == 1 %}
+                        Lo compartes con 1 persona. Te toca {{ choice.share_cents|money }}.
+                      {% else %}
+                        Lo compartes con {{ choice.others }} personas. Te toca {{ choice.share_cents|money }}.
+                      {% endif %}
+                    {% else %}
+                      {% if choice.others == 0 %}
+                        Si lo marcas, te toca {{ choice.share_cents|money }}.
+                      {% elif choice.others == 1 %}
+                        Si lo marcas, lo repartes con 1 persona y te toca {{ choice.share_cents|money }}.
+                      {% else %}
+                        Si lo marcas, lo repartes con {{ choice.others }} personas y te toca {{ choice.share_cents|money }}.
+                      {% endif %}
+                    {% endif %}
+                  </small>
+                </span>
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <label for="tip">Propina (%)</label>
+        <input id="tip" name="tip_percent" type="number" min="0" max="100" step="1" value="{{ person.tip_percent }}" required>
+        <p class="muted">Se calcula sobre tu parte, no sobre toda la cuenta. 0 significa sin propina. 10 significa diez por ciento.</p>
+        <button type="submit">Guardar y ver mi parte</button>
+      </form>
+    {% else %}
+      <p class="muted">Todavía no hay productos en esta cuenta.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Pagar</h2>
+    <p>No hay cobro real. El botón solo te marca como pagado en el tablero, con el monto de arriba.</p>
+    <form action="{{ url_for('pagar', account_id=account.id, participant_id=person.id) }}" method="post">
+      <button type="submit">Pagar {{ person.live_cents|money }}</button>
+    </form>
+  </section>
+{% endif %}
+{% endblock %}
