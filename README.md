@@ -1,6 +1,6 @@
 Cuenta compartida
 
-Hice una app para dividir la cuenta de un evento. Cada persona marca lo que consumió, ve cuánto le toca (con 10% de propina) y paga con un QR de CoDi. Cuando pey avisa que el pago llegó, la página se actualiza sola.
+Hice una app para dividir la cuenta de un evento. Cada persona marca lo que consumió, ve cuánto le toca (con propina opcional) y paga con un QR de CoDi. Cuando pey avisa que el pago llegó, la página se actualiza sola.
 
 Es mi proyecto para el Hackatón México 2026 (pagos con CoDi / pey).
 
